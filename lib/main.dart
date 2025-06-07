@@ -229,8 +229,13 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('giglitrk'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        leading: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Image.asset('assets/blue-icon-32.png'),
+        ),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark 
+          ? Colors.black 
+          : Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
