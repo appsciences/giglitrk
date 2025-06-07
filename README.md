@@ -1,16 +1,37 @@
 # giglitrk
 
-A new Flutter project.
+A macOS time tracking application built with Flutter that helps you track time spent on different client work.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- 9 independent timers in a 3x3 grid layout
+- Exclusive timer operation - only one timer can run at a time
+- Global keyboard shortcuts:
+  - `Ctrl+Alt+⌘+[1-9]` to toggle individual timers
+  - `Ctrl+Alt+⌘+0` to stop all timers
+- In-app keyboard shortcuts (when app is focused)
+  - Number keys `1-9` to toggle timers
+  - `0` to stop all timers
+- System theme support (light/dark mode)
+- Visual timer display showing hours:minutes:seconds
+- Timer status indicators (Running/Stopped)
 
-A few resources to get you started if this is your first Flutter project:
+## Requirements
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- macOS
+- Standard macOS accessibility permissions for global keyboard shortcuts
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Development
+
+This is a Flutter desktop application. To run it:
+
+1. Ensure you have Flutter installed and configured for desktop development
+2. Clone the repository
+3. Run `flutter pub get` to install dependencies
+4. Run `flutter run -d macos` to launch the app
+
+## Dependencies
+
+- `hotkey_manager`: For global keyboard shortcuts
+- `flutter/services`: For in-app keyboard handling
+- Material Design 3 widgets and theming
