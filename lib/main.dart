@@ -139,6 +139,14 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
           keyDownHandler: (_) async {
             print('Hotkey pressed: timer-${i + 1}');
             setState(() {
+              // Stop all other timers before toggling this one
+              if (!timers[i].isRunning) {
+                for (var j = 0; j < timers.length; j++) {
+                  if (j != i && timers[j].isRunning) {
+                    timers[j].stop();
+                  }
+                }
+              }
               timers[i].toggle();
             });
           },
@@ -194,6 +202,14 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
       if (RegExp(r'[1-9]').hasMatch(key)) {
         final index = int.parse(key) - 1;
         setState(() {
+          // Stop all other timers before toggling this one
+          if (!timers[index].isRunning) {
+            for (var j = 0; j < timers.length; j++) {
+              if (j != index && timers[j].isRunning) {
+                timers[j].stop();
+              }
+            }
+          }
           timers[index].toggle();
         });
       } else if (key == '0') {
@@ -232,6 +248,14 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
               child: InkWell(
                 onTap: () {
                   setState(() {
+                    // Stop all other timers before toggling this one
+                    if (!timer.isRunning) {
+                      for (var i = 0; i < timers.length; i++) {
+                        if (i != index && timers[i].isRunning) {
+                          timers[i].stop();
+                        }
+                      }
+                    }
                     timer.toggle();
                   });
                 },
