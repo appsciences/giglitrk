@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:hotkey_manager/hotkey_manager.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize hotkey manager
+  await hotKeyManager.unregisterAll();
+  
   runApp(const MyApp());
 }
 
@@ -92,27 +98,98 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
   @override
   void initState() {
     super.initState();
-    // Update UI every second
     _updateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {});
     });
 
     // Set up keyboard listeners
-    RawKeyboard.instance.addListener(_handleKeyPress);
+    HardwareKeyboard.instance.addHandler(_handleKeyPress);
+    
+    // Set up global hotkeys
+    _setupHotkeys();
+  }
+
+  Future<void> _setupHotkeys() async {
+    final keys = [
+      LogicalKeyboardKey.digit1,
+      LogicalKeyboardKey.digit2,
+      LogicalKeyboardKey.digit3,
+      LogicalKeyboardKey.digit4,
+      LogicalKeyboardKey.digit5,
+      LogicalKeyboardKey.digit6,
+      LogicalKeyboardKey.digit7,
+      LogicalKeyboardKey.digit8,
+      LogicalKeyboardKey.digit9,
+    ];
+    
+    // First unregister any existing hotkeys
+    await hotKeyManager.unregisterAll();
+    
+    for (var i = 0; i < timers.length; i++) {
+      final hotKey = HotKey(
+        key: keys[i],
+        modifiers: [HotKeyModifier.control, HotKeyModifier.alt, HotKeyModifier.meta],
+        scope: HotKeyScope.system,
+        identifier: 'timer-${i + 1}',
+      );
+      
+      try {
+        await hotKeyManager.register(
+          hotKey,
+          keyDownHandler: (_) async {
+            print('Hotkey pressed: timer-${i + 1}');
+            setState(() {
+              timers[i].toggle();
+            });
+          },
+        );
+        print('Successfully registered hotkey: ${hotKey.identifier}');
+      } catch (e) {
+        print('Failed to register hotkey: ${hotKey.identifier}, error: $e');
+      }
+    }
+    
+    // Register hotkey for stopping all timers
+    final stopHotKey = HotKey(
+      key: LogicalKeyboardKey.digit0,
+      modifiers: [HotKeyModifier.fn, HotKeyModifier.meta],
+      scope: HotKeyScope.system,
+      identifier: 'stop-all',
+    );
+    
+    try {
+      await hotKeyManager.register(
+        stopHotKey,
+        keyDownHandler: (_) async {
+          print('Stop all hotkey pressed');
+          setState(() {
+            for (var timer in timers) {
+              if (timer.isRunning) {
+                timer.stop();
+              }
+            }
+          });
+        },
+      );
+      print('Successfully registered stop hotkey');
+    } catch (e) {
+      print('Failed to register stop hotkey: $e');
+    }
   }
 
   @override
   void dispose() {
     _updateTimer?.cancel();
-    RawKeyboard.instance.removeListener(_handleKeyPress);
+    HardwareKeyboard.instance.removeHandler(_handleKeyPress);
+    hotKeyManager.unregisterAll();
     for (var timer in timers) {
       timer.timer?.cancel();
     }
     super.dispose();
   }
 
-  void _handleKeyPress(RawKeyEvent event) {
-    if (event is RawKeyDownEvent) {
+  bool _handleKeyPress(KeyEvent event) {
+    if (event is KeyDownEvent) {
       final key = event.logicalKey.keyLabel;
       if (RegExp(r'[1-9]').hasMatch(key)) {
         final index = int.parse(key) - 1;
@@ -120,7 +197,6 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
           timers[index].toggle();
         });
       } else if (key == '0') {
-        // Find and stop the currently running timer
         setState(() {
           for (var timer in timers) {
             if (timer.isRunning) {
@@ -130,6 +206,7 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
         });
       }
     }
+    return false;
   }
 
   @override
@@ -192,7 +269,7 @@ class _TimeTrackerHomeState extends State<TimeTrackerHome> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Press ${index + 1} to toggle',
+                        'Press ^+⎇+⌘+${index + 1}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
